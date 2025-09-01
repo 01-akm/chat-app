@@ -30,36 +30,52 @@ io.on('connection', (socket) => {
 
   // Listen for 'chat message' events from a client
   socket.on('chat message', (data) => {
-    // Broadcast the message to all connected clients, including the sender
-    // We add the username from the socket session to the data
     io.emit('chat message', { user: socket.username, text: data.text });
   });
 
   // Listen for 'typing' events
   socket.on('typing', () => {
-    // Broadcast to everyone *except* the sender
     socket.broadcast.emit('typing', socket.username);
   });
 
   // Listen for 'stop typing' events
   socket.on('stop typing', () => {
-    // Broadcast to everyone *except* the sender
     socket.broadcast.emit('stop typing');
   });
 
-  // NEW: Listen for file uploads and broadcast them
+  // Listen for file uploads and broadcast them
   socket.on('upload file', (fileData) => {
-    // Broadcast the file to all connected clients
     io.emit('file message', { user: socket.username, file: fileData });
+  });
+
+  // --- WebRTC Signaling Events ---
+
+  // When a user initiates a call to another user
+  socket.on('call user', (data) => {
+    const userToCallSocketId = Object.keys(users).find(key => users[key] === data.userToCall);
+    if (userToCallSocketId) {
+        // Emit an event to the specific user being called
+        io.to(userToCallSocketId).emit('call received', {
+            signal: data.signalData,
+            from: {
+                id: socket.id,
+                username: socket.username
+            }
+        });
+    }
+  });
+
+  // When a user answers a call
+  socket.on('answer call', (data) => {
+    // Send the answer signal back to the original caller
+    io.to(data.to).emit('call answered', data.signal);
   });
 
   // Handle disconnections
   socket.on('disconnect', () => {
     console.log('...a user has disconnected.');
-    // Remove the user from our list
     if (users[socket.id]) {
         delete users[socket.id];
-        // Broadcast the updated user list to everyone
         io.emit('update user list', Object.values(users));
     }
   });
