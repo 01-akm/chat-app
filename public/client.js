@@ -75,8 +75,7 @@ socket.on('chat message', (data) => {
   chatContainer.scrollTop = chatContainer.scrollHeight;
 });
 
-// This is the crucial part for displaying images
-// Listen for 'file message' events from the server
+// NEW: Listen for 'file message' events from the server
 socket.on('file message', (data) => {
     const item = document.createElement('li');
     
@@ -84,7 +83,8 @@ socket.on('file message', (data) => {
     userElement.textContent = data.user;
 
     const imageElement = document.createElement('img');
-    imageElement.src = data.file.data; // The base64 string is used as the image source
+    // The base64 string from the server is used as the image source
+    imageElement.src = data.file.data; 
     imageElement.alt = data.file.name;
 
     item.appendChild(userElement);
