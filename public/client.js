@@ -21,7 +21,7 @@ let typingTimeout;
 
 // Handle username submission
 usernameForm.addEventListener('submit', (e) => {
-    e.preventDefault(); // This is the line that prevents the page from reloading
+    e.preventDefault(); // This prevents the username form from reloading
     if (usernameInput.value) {
         username = usernameInput.value.trim();
         socket.emit('set username', username);
@@ -35,7 +35,7 @@ usernameForm.addEventListener('submit', (e) => {
 
 // Listen for the form submission event
 form.addEventListener('submit', (e) => {
-  e.preventDefault();
+  e.preventDefault(); // This prevents the message form from reloading
   if (input.value) {
     socket.emit('chat message', { text: input.value });
     socket.emit('stop typing');
