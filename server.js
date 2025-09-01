@@ -1,42 +1,62 @@
-// --- 1. SETUP ---
 const express = require('express');
-const path = require('path');
-// Import the built-in 'http' module to create an HTTP server.
 const http = require('http');
-// Import the Server class from the 'socket.io' library.
 const { Server } = require("socket.io");
+const path = require('path');
 
-// --- 2. INITIALIZATION ---
 const app = express();
-// Create an HTTP server instance and pass our Express app to it.
 const server = http.createServer(app);
-// Create a new Socket.IO server instance and attach it to our HTTP server.
 const io = new Server(server);
 
-const PORT = process.env.PORT || 3000;
+const PORT = 3000;
 
-// --- 3. MIDDLEWARE ---
-// This remains the same. It serves our static files from the 'public' folder.
+// Serve static files from the "public" directory
 app.use(express.static(path.join(__dirname, 'public')));
 
-// --- 4. SOCKET.IO CONNECTION HANDLING ---
-// This is the heart of our real-time functionality.
-// We listen for the 'connection' event. This event fires whenever a new
-// client (a user's browser) connects to our server.
-io.on('connection', (socket) => {
-  // The 'socket' object represents the individual connection to that one client.
-  console.log(`A user has connected: ${socket.id}`);
+// An object to store active users. We'll use socket.id as the key.
+const users = {};
 
-  // We can also listen for events from this specific client.
-  // For example, the 'disconnect' event fires when they close the browser tab.
+// Listen for new connections
+io.on('connection', (socket) => {
+  console.log('A user has connected...');
+
+  // When a user sets their username
+  socket.on('set username', (username) => {
+    socket.username = username;
+    users[socket.id] = username;
+    // Broadcast the updated user list to everyone
+    io.emit('update user list', Object.values(users));
+  });
+
+  // Listen for 'chat message' events from a client
+  socket.on('chat message', (data) => {
+    // Broadcast the message to all connected clients, including the sender
+    // We add the username from the socket session to the data
+    io.emit('chat message', { user: socket.username, text: data.text });
+  });
+
+  // Listen for 'typing' events
+  socket.on('typing', () => {
+    // Broadcast to everyone *except* the sender
+    socket.broadcast.emit('typing', socket.username);
+  });
+
+  // Listen for 'stop typing' events
+  socket.on('stop typing', () => {
+    // Broadcast to everyone *except* the sender
+    socket.broadcast.emit('stop typing');
+  });
+
+  // Handle disconnections
   socket.on('disconnect', () => {
-    console.log(`User disconnected: ${socket.id}`);
+    console.log('...a user has disconnected.');
+    // Remove the user from our list
+    delete users[socket.id];
+    // Broadcast the updated user list to everyone
+    io.emit('update user list', Object.values(users));
   });
 });
 
-// --- 5. SERVER LISTENING ---
-// IMPORTANT: We now tell our 'server' (the HTTP one) to listen, not the 'app' (the Express one).
-// This ensures that both Express and Socket.IO are running on the same port.
+// Start the server
 server.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
 });
