@@ -9,6 +9,10 @@ const usernameInput = document.getElementById('username-input');
 const appContainer = document.getElementById('app-container');
 const userList = document.getElementById('user-list');
 const voiceChatContainer = document.getElementById('voice-chat-container');
+const voiceChatStatus = document.getElementById('voice-chat-status');
+const callInfo = document.getElementById('call-info');
+const muteButton = document.getElementById('mute-button');
+const hangUpButton = document.getElementById('hang-up-button');
 
 // Chat section elements
 const chatContainer = document.getElementById('chat-container');
@@ -25,7 +29,6 @@ let typingTimeout;
 // --- WebRTC Voice Chat Variables ---
 let localStream;
 const peers = {}; // key: username, value: peer object
-let receivingCall = null; // Stores data of an incoming call
 
 // Handle username submission
 usernameForm.addEventListener('submit', (e) => {
@@ -59,8 +62,6 @@ form.addEventListener('submit', (e) => {
     input.value = '';
   }
 });
-
-// ... (existing event listeners for typing, chat messages, file messages) ...
 
 // Listen for 'chat message' events coming from the server
 socket.on('chat message', (data) => {
@@ -103,7 +104,6 @@ socket.on('file message', (data) => {
     messages.appendChild(item);
     chatContainer.scrollTop = chatContainer.scrollHeight;
 });
-
 
 socket.on('typing', (user) => {
     typingIndicator.textContent = `${user} is typing...`;
@@ -148,9 +148,8 @@ fileInput.addEventListener('change', (e) => {
         socket.emit('upload file', { name: file.name, type: file.type, data: reader.result });
     };
     reader.readAsDataURL(file);
-    e.target.value = '';
+    e.target.value = ''; // Reset the input so the same file can be selected again
 });
-
 
 // --- WebRTC Voice Chat Functions ---
 
@@ -159,10 +158,15 @@ function startCall(userToCall) {
         alert("Microphone not ready. Please allow microphone access.");
         return;
     }
+    // Prevent calling multiple people at once
+    if (Object.keys(peers).length > 0) {
+        alert("You are already in a call.");
+        return;
+    }
 
     const peer = new SimplePeer({
-        initiator: true, // This user is initiating the call
-        trickle: false, // Use trickle ICE for faster connection setup
+        initiator: true, 
+        trickle: false, 
         stream: localStream
     });
 
@@ -177,10 +181,19 @@ function startCall(userToCall) {
 
     peer.on('stream', stream => handleRemoteStream(stream, userToCall));
     peer.on('close', () => handlePeerClose(userToCall));
+    peer.on('error', (err) => {
+        console.error("Peer connection error:", err);
+        handlePeerClose(userToCall);
+    });
 }
 
 socket.on('call received', (data) => {
-    receivingCall = data; // Store incoming call data
+    // If already in a call, reject
+    if (Object.keys(peers).length > 0) {
+        // You could emit a 'busy' signal here
+        return;
+    }
+
     const answer = confirm(`Incoming call from ${data.from.username}. Answer?`);
 
     if (answer && localStream) {
@@ -199,18 +212,19 @@ socket.on('call received', (data) => {
         peer.signal(data.signal); // Accept the signal from the caller
         peer.on('stream', stream => handleRemoteStream(stream, data.from.username));
         peer.on('close', () => handlePeerClose(data.from.username));
+        peer.on('error', (err) => {
+            console.error("Peer connection error:", err);
+            handlePeerClose(data.from.username);
+        });
     }
 });
 
-
 socket.on('call answered', (signal) => {
-    // Find the peer that is waiting for an answer
     const userToAnswer = Object.keys(peers).find(key => peers[key].initiator);
     if (userToAnswer) {
         peers[userToAnswer].signal(signal);
     }
 });
-
 
 function handleRemoteStream(stream, user) {
     let audio = document.querySelector(`audio[data-user="${user}"]`);
@@ -221,6 +235,10 @@ function handleRemoteStream(stream, user) {
         voiceChatContainer.appendChild(audio);
     }
     audio.srcObject = stream;
+
+    // Update UI to show in-call status
+    voiceChatStatus.classList.remove('hidden');
+    callInfo.textContent = `With ${user}`;
 }
 
 function handlePeerClose(user) {
@@ -229,5 +247,28 @@ function handlePeerClose(user) {
         audio.remove();
     }
     delete peers[user];
+    
+    // Update UI
+    voiceChatStatus.classList.add('hidden');
+    callInfo.textContent = '';
+    muteButton.textContent = 'Mute';
 }
+
+// --- Voice Chat UI Event Listeners ---
+muteButton.addEventListener('click', () => {
+    if (!localStream) return;
+    localStream.getAudioTracks().forEach(track => {
+        track.enabled = !track.enabled; // Toggle mute state
+    });
+    muteButton.textContent = muteButton.textContent === 'Mute' ? 'Unmute' : 'Mute';
+});
+
+hangUpButton.addEventListener('click', () => {
+    // Hang up on all current calls
+    for (const user in peers) {
+        if (peers[user]) {
+            peers[user].destroy(); // This will trigger the 'close' event for each peer
+        }
+    }
+});
 
