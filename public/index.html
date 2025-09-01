@@ -15,14 +15,23 @@
         </form>
     </div>
 
-    <!-- Main chat container, hidden by default -->
-    <div id="chat-container" class="hidden">
-        <ul id="messages"></ul>
-        <p id="typing-indicator"></p>
-        <form id="form" action="">
-          <input id="input" autocomplete="off" placeholder="Type a message..." />
-          <button>Send</button>
-        </form>
+    <!-- Main app container, hidden by default -->
+    <div id="app-container" class="hidden">
+        <!-- Sidebar for online users -->
+        <aside id="user-list-container">
+            <h2>Online Users</h2>
+            <ul id="user-list"></ul>
+        </aside>
+
+        <!-- Main chat container -->
+        <div id="chat-container">
+            <ul id="messages"></ul>
+            <p id="typing-indicator"></p>
+            <form id="form" action="">
+              <input id="input" autocomplete="off" placeholder="Type a message..." />
+              <button>Send</button>
+            </form>
+        </div>
     </div>
 
     <script src="/socket.io/socket.io.js"></script>
