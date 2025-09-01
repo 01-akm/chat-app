@@ -1,0 +1,7 @@
+/* Basic styling to make the page look a bit cleaner. We will add more later. */
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    margin: 40px;
+    background-color: #f0f2f5;
+    color: #1c1e21;
+}
