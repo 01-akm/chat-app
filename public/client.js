@@ -190,7 +190,6 @@ function startCall(userToCall) {
 socket.on('call received', (data) => {
     // If already in a call, reject
     if (Object.keys(peers).length > 0) {
-        // You could emit a 'busy' signal here
         return;
     }
 
@@ -209,7 +208,7 @@ socket.on('call received', (data) => {
             socket.emit('answer call', { signal: signalData, to: data.from.id });
         });
         
-        peer.signal(data.signal); // Accept the signal from the caller
+        peer.signal(data.signal); 
         peer.on('stream', stream => handleRemoteStream(stream, data.from.username));
         peer.on('close', () => handlePeerClose(data.from.username));
         peer.on('error', (err) => {
@@ -226,6 +225,15 @@ socket.on('call answered', (signal) => {
     }
 });
 
+// New listener for when the other user ends the call
+socket.on('call ended', () => {
+    for (const user in peers) {
+        if (peers[user]) {
+            peers[user].destroy();
+        }
+    }
+});
+
 function handleRemoteStream(stream, user) {
     let audio = document.querySelector(`audio[data-user="${user}"]`);
     if (!audio) {
@@ -236,7 +244,6 @@ function handleRemoteStream(stream, user) {
     }
     audio.srcObject = stream;
 
-    // Update UI to show in-call status
     voiceChatStatus.classList.remove('hidden');
     callInfo.textContent = `With ${user}`;
 }
@@ -246,9 +253,10 @@ function handlePeerClose(user) {
     if (audio) {
         audio.remove();
     }
-    delete peers[user];
+    if (peers[user]) {
+       delete peers[user];
+    }
     
-    // Update UI
     voiceChatStatus.classList.add('hidden');
     callInfo.textContent = '';
     muteButton.textContent = 'Mute';
@@ -258,16 +266,17 @@ function handlePeerClose(user) {
 muteButton.addEventListener('click', () => {
     if (!localStream) return;
     localStream.getAudioTracks().forEach(track => {
-        track.enabled = !track.enabled; // Toggle mute state
+        track.enabled = !track.enabled;
     });
     muteButton.textContent = muteButton.textContent === 'Mute' ? 'Unmute' : 'Mute';
 });
 
 hangUpButton.addEventListener('click', () => {
-    // Hang up on all current calls
     for (const user in peers) {
         if (peers[user]) {
-            peers[user].destroy(); // This will trigger the 'close' event for each peer
+            // Tell the other user we are hanging up
+            socket.emit('hang up', { user: user }); 
+            peers[user].destroy(); // Destroy our local peer
         }
     }
 });

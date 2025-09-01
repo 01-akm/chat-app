@@ -1,88 +1,84 @@
 const express = require('express');
 const http = require('http');
 const { Server } = require("socket.io");
-const path = require('path');
 
 const app = express();
 const server = http.createServer(app);
-// Increase the max payload size for Socket.IO to handle larger images
-const io = new Server(server, { maxHttpBufferSize: 1e8 }); // 100 MB
+const io = new Server(server);
 
 const PORT = 3000;
+const users = {}; // Store users: { socketId: 'username' }
 
-// Serve static files from the "public" directory
-app.use(express.static(path.join(__dirname, 'public')));
-
-// An object to store active users. We'll use socket.id as the key.
-const users = {};
+// Serve the 'public' folder as static files
+app.use(express.static('public'));
 
 // Listen for new connections
 io.on('connection', (socket) => {
-  console.log('A user has connected...');
+    console.log('A user has connected:', socket.id);
 
-  // When a user sets their username
-  socket.on('set username', (username) => {
-    socket.username = username;
-    users[socket.id] = username;
-    // Broadcast the updated user list to everyone
-    io.emit('update user list', Object.values(users));
-  });
-
-  // Listen for 'chat message' events from a client
-  socket.on('chat message', (data) => {
-    io.emit('chat message', { user: socket.username, text: data.text });
-  });
-
-  // Listen for 'typing' events
-  socket.on('typing', () => {
-    socket.broadcast.emit('typing', socket.username);
-  });
-
-  // Listen for 'stop typing' events
-  socket.on('stop typing', () => {
-    socket.broadcast.emit('stop typing');
-  });
-
-  // Listen for file uploads and broadcast them
-  socket.on('upload file', (fileData) => {
-    io.emit('file message', { user: socket.username, file: fileData });
-  });
-
-  // --- WebRTC Signaling Events ---
-
-  // When a user initiates a call to another user
-  socket.on('call user', (data) => {
-    const userToCallSocketId = Object.keys(users).find(key => users[key] === data.userToCall);
-    if (userToCallSocketId) {
-        // Emit an event to the specific user being called
-        io.to(userToCallSocketId).emit('call received', {
-            signal: data.signalData,
-            from: {
-                id: socket.id,
-                username: socket.username
-            }
-        });
-    }
-  });
-
-  // When a user answers a call
-  socket.on('answer call', (data) => {
-    // Send the answer signal back to the original caller
-    io.to(data.to).emit('call answered', data.signal);
-  });
-
-  // Handle disconnections
-  socket.on('disconnect', () => {
-    console.log('...a user has disconnected.');
-    if (users[socket.id]) {
-        delete users[socket.id];
+    // Listen for username setup
+    socket.on('set username', (username) => {
+        socket.username = username;
+        users[socket.id] = username;
+        // Broadcast the updated user list to everyone
         io.emit('update user list', Object.values(users));
-    }
-  });
+    });
+
+    // Listen for chat messages
+    socket.on('chat message', (msg) => {
+        // Broadcast the message to everyone
+        io.emit('chat message', { user: socket.username, text: msg.text });
+    });
+
+    // Listen for file uploads
+    socket.on('upload file', (fileData) => {
+        io.emit('file message', { user: socket.username, file: fileData });
+    });
+
+    // Listen for typing events
+    socket.on('typing', () => {
+        socket.broadcast.emit('typing', socket.username);
+    });
+
+    socket.on('stop typing', () => {
+        socket.broadcast.emit('stop typing');
+    });
+
+    // --- WebRTC Signaling ---
+    socket.on('call user', (data) => {
+        const userToCall = Object.keys(users).find(key => users[key] === data.userToCall);
+        if (userToCall) {
+            io.to(userToCall).emit('call received', {
+                signal: data.signalData,
+                from: { id: socket.id, username: socket.username }
+            });
+        }
+    });
+
+    socket.on('answer call', (data) => {
+        io.to(data.to).emit('call answered', data.signal);
+    });
+
+    // Listen for hang up event and relay it
+    socket.on('hang up', (data) => {
+        const userToNotify = Object.keys(users).find(key => users[key] === data.user);
+        if (userToNotify) {
+            io.to(userToNotify).emit('call ended');
+        }
+    });
+
+    // Listen for disconnections
+    socket.on('disconnect', () => {
+        console.log('A user has disconnected:', socket.id);
+        // You might want to also signal a hang up if the user was in a call
+        delete users[socket.id];
+        // Broadcast the updated user list to everyone
+        io.emit('update user list', Object.values(users));
+    });
 });
 
 // Start the server
 server.listen(PORT, () => {
-  console.log(`Server is running on http://localhost:${PORT}`);
+    console.log(`Server is running on http://localhost:${PORT}`);
 });
 
