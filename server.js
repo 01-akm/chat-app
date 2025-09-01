@@ -47,7 +47,7 @@ io.on('connection', (socket) => {
     socket.broadcast.emit('stop typing');
   });
 
-  // Listen for file uploads
+  // NEW: Listen for file uploads and broadcast them
   socket.on('upload file', (fileData) => {
     // Broadcast the file to all connected clients
     io.emit('file message', { user: socket.username, file: fileData });
