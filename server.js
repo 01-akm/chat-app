@@ -1,31 +1,43 @@
 // --- 1. SETUP ---
-// We are importing the 'express' library, which we installed earlier.
-// This is the main tool we'll use to build our web server.
 const express = require('express');
-
-// We are also importing the 'path' module. This is a built-in Node.js module
-// that helps us work with file and directory paths in a consistent way.
 const path = require('path');
+// Import the built-in 'http' module to create an HTTP server.
+const http = require('http');
+// Import the Server class from the 'socket.io' library.
+const { Server } = require("socket.io");
 
 // --- 2. INITIALIZATION ---
-// We create an instance of the express application.
-// Think of 'app' as our main server object.
 const app = express();
+// Create an HTTP server instance and pass our Express app to it.
+const server = http.createServer(app);
+// Create a new Socket.IO server instance and attach it to our HTTP server.
+const io = new Server(server);
 
-// We define a port number for our server to listen on.
-// 3000 is a common port for development. If that port is busy on your machine,
-// it will use whatever is available in the environment variable PORT.
 const PORT = process.env.PORT || 3000;
 
 // --- 3. MIDDLEWARE ---
-// This is a crucial line. It tells our Express app to serve static files
-// (like HTML, CSS, and client-side JavaScript) from a folder named 'public'.
-// We haven't created this folder yet, but we will in the next step!
+// This remains the same. It serves our static files from the 'public' folder.
 app.use(express.static(path.join(__dirname, 'public')));
 
-// --- 4. SERVER LISTENING ---
-// Finally, we tell our server to start listening for connections on the port we defined.
-// When it starts successfully, it will print a message to the console.
-app.listen(PORT, () => {
+// --- 4. SOCKET.IO CONNECTION HANDLING ---
+// This is the heart of our real-time functionality.
+// We listen for the 'connection' event. This event fires whenever a new
+// client (a user's browser) connects to our server.
+io.on('connection', (socket) => {
+  // The 'socket' object represents the individual connection to that one client.
+  console.log(`A user has connected: ${socket.id}`);
+
+  // We can also listen for events from this specific client.
+  // For example, the 'disconnect' event fires when they close the browser tab.
+  socket.on('disconnect', () => {
+    console.log(`User disconnected: ${socket.id}`);
+  });
+});
+
+// --- 5. SERVER LISTENING ---
+// IMPORTANT: We now tell our 'server' (the HTTP one) to listen, not the 'app' (the Express one).
+// This ensures that both Express and Socket.IO are running on the same port.
+server.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
 });
+
