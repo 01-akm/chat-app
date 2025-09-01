@@ -30,6 +30,10 @@
             <ul id="messages"></ul>
             <div id="typing-indicator"></div>
             <form id="form" action="">
+                <!-- Hidden file input for selecting images -->
+                <input id="file-input" type="file" accept="image/*" class="hidden"/>
+                <!-- Button to trigger the file input -->
+                <button type="button" id="file-button">📎</button>
                 <input id="input" autocomplete="off" placeholder="Type a message..." /><button>Send</button>
             </form>
         </div>
