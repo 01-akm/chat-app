@@ -5,7 +5,8 @@ const path = require('path');
 
 const app = express();
 const server = http.createServer(app);
-const io = new Server(server);
+// Increase the max payload size for Socket.IO to handle larger images
+const io = new Server(server, { maxHttpBufferSize: 1e8 }); // 100 MB
 
 const PORT = 3000;
 
@@ -46,13 +47,21 @@ io.on('connection', (socket) => {
     socket.broadcast.emit('stop typing');
   });
 
+  // Listen for file uploads
+  socket.on('upload file', (fileData) => {
+    // Broadcast the file to all connected clients
+    io.emit('file message', { user: socket.username, file: fileData });
+  });
+
   // Handle disconnections
   socket.on('disconnect', () => {
     console.log('...a user has disconnected.');
     // Remove the user from our list
-    delete users[socket.id];
-    // Broadcast the updated user list to everyone
-    io.emit('update user list', Object.values(users));
+    if (users[socket.id]) {
+        delete users[socket.id];
+        // Broadcast the updated user list to everyone
+        io.emit('update user list', Object.values(users));
+    }
   });
 });
 
