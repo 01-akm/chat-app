@@ -35,7 +35,7 @@ usernameForm.addEventListener('submit', (e) => {
     }
 });
 
-// Listen for the form submission event
+// Listen for the form submission event for text messages
 form.addEventListener('submit', (e) => {
   e.preventDefault(); 
   if (input.value) {
@@ -45,7 +45,7 @@ form.addEventListener('submit', (e) => {
   }
 });
 
-// Listen for input events on the text field
+// Listen for input events on the text field for typing indicator
 input.addEventListener('input', () => {
   socket.emit('typing');
   clearTimeout(typingTimeout);
@@ -62,7 +62,7 @@ socket.on('chat message', (data) => {
   userElement.textContent = data.user;
 
   const textElement = document.createElement('span');
-  textElement.textContent = `: ${data.text}`;
+  textElement.textContent = data.text;
 
   item.appendChild(userElement);
   item.appendChild(textElement);
@@ -74,6 +74,30 @@ socket.on('chat message', (data) => {
   messages.appendChild(item);
   chatContainer.scrollTop = chatContainer.scrollHeight;
 });
+
+// This is the crucial part for displaying images
+// Listen for 'file message' events from the server
+socket.on('file message', (data) => {
+    const item = document.createElement('li');
+    
+    const userElement = document.createElement('strong');
+    userElement.textContent = data.user;
+
+    const imageElement = document.createElement('img');
+    imageElement.src = data.file.data; // The base64 string is used as the image source
+    imageElement.alt = data.file.name;
+
+    item.appendChild(userElement);
+    item.appendChild(imageElement);
+
+    if (data.user === username) {
+        item.classList.add('my-message');
+    }
+
+    messages.appendChild(item);
+    chatContainer.scrollTop = chatContainer.scrollHeight;
+});
+
 
 // Listen for 'typing' events from other users
 socket.on('typing', (user) => {
@@ -87,9 +111,7 @@ socket.on('stop typing', () => {
 
 // Listen for the user list update
 socket.on('update user list', (users) => {
-    // Clear the current list
-    userList.innerHTML = '';
-    // Add each user to the list
+    userList.innerHTML = ''; // Clear the current list
     users.forEach(user => {
         const item = document.createElement('li');
         item.textContent = user;
@@ -102,7 +124,7 @@ fileButton.addEventListener('click', () => {
     fileInput.click();
 });
 
-// Handle the file selection
+// Handle the file selection and send the file to the server
 fileInput.addEventListener('change', (e) => {
     const file = e.target.files[0];
     if (!file) {
@@ -125,7 +147,6 @@ fileInput.addEventListener('change', (e) => {
     };
     reader.readAsDataURL(file);
 
-    // Reset the input value so you can upload the same file again if needed
     e.target.value = '';
 });
 
