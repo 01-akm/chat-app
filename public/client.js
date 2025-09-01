@@ -15,13 +15,15 @@ const form = document.getElementById('form');
 const input = document.getElementById('input');
 const messages = document.getElementById('messages');
 const typingIndicator = document.getElementById('typing-indicator');
+const fileButton = document.getElementById('file-button');
+const fileInput = document.getElementById('file-input');
 
 let username = '';
 let typingTimeout;
 
 // Handle username submission
 usernameForm.addEventListener('submit', (e) => {
-    e.preventDefault(); // This prevents the username form from reloading
+    e.preventDefault(); 
     if (usernameInput.value) {
         username = usernameInput.value.trim();
         socket.emit('set username', username);
@@ -35,7 +37,7 @@ usernameForm.addEventListener('submit', (e) => {
 
 // Listen for the form submission event
 form.addEventListener('submit', (e) => {
-  e.preventDefault(); // This prevents the message form from reloading
+  e.preventDefault(); 
   if (input.value) {
     socket.emit('chat message', { text: input.value });
     socket.emit('stop typing');
@@ -60,7 +62,7 @@ socket.on('chat message', (data) => {
   userElement.textContent = data.user;
 
   const textElement = document.createElement('span');
-  textElement.textContent = data.text;
+  textElement.textContent = `: ${data.text}`;
 
   item.appendChild(userElement);
   item.appendChild(textElement);
@@ -70,7 +72,7 @@ socket.on('chat message', (data) => {
   }
 
   messages.appendChild(item);
-  window.scrollTo(0, document.body.scrollHeight);
+  chatContainer.scrollTop = chatContainer.scrollHeight;
 });
 
 // Listen for 'typing' events from other users
@@ -93,5 +95,37 @@ socket.on('update user list', (users) => {
         item.textContent = user;
         userList.appendChild(item);
     });
+});
+
+// Trigger the hidden file input when the paperclip button is clicked
+fileButton.addEventListener('click', () => {
+    fileInput.click();
+});
+
+// Handle the file selection
+fileInput.addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (!file) {
+        return;
+    }
+
+    if (!file.type.startsWith('image/')) {
+        alert('Please select an image file.');
+        return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = () => {
+        const fileData = {
+            name: file.name,
+            type: file.type,
+            data: reader.result // This is the base64 string
+        };
+        socket.emit('upload file', fileData);
+    };
+    reader.readAsDataURL(file);
+
+    // Reset the input value so you can upload the same file again if needed
+    e.target.value = '';
 });
 
