@@ -14,6 +14,12 @@ const callInfo = document.getElementById('call-info');
 const muteButton = document.getElementById('mute-button');
 const hangUpButton = document.getElementById('hang-up-button');
 
+// --- New Incoming Call Elements ---
+const incomingCallContainer = document.getElementById('incoming-call-container');
+const incomingCallInfo = document.getElementById('incoming-call-info');
+const acceptCallButton = document.getElementById('accept-call-button');
+const declineCallButton = document.getElementById('decline-call-button');
+
 // Chat section elements
 const chatContainer = document.getElementById('chat-container');
 const form = document.getElementById('form');
@@ -29,6 +35,7 @@ let typingTimeout;
 // --- WebRTC Voice Chat Variables ---
 let localStream;
 const peers = {}; // key: username, value: peer object
+let incomingCallData = null; // Store incoming call data temporarily
 
 // Handle username submission
 usernameForm.addEventListener('submit', (e) => {
@@ -187,35 +194,50 @@ function startCall(userToCall) {
     });
 }
 
+// --- Modified 'call received' logic ---
 socket.on('call received', (data) => {
-    // If already in a call, reject
-    if (Object.keys(peers).length > 0) {
+    // If already in a call or being called, reject
+    if (Object.keys(peers).length > 0 || incomingCallData) {
         return;
     }
 
-    const answer = confirm(`Incoming call from ${data.from.username}. Answer?`);
+    incomingCallData = data; // Store call data
+    incomingCallInfo.textContent = `Incoming call from ${data.from.username}...`;
+    incomingCallContainer.classList.remove('hidden');
+});
 
-    if (answer && localStream) {
-        const peer = new SimplePeer({
-            initiator: false,
-            trickle: false,
-            stream: localStream
-        });
+acceptCallButton.addEventListener('click', () => {
+    if (!incomingCallData || !localStream) return;
+    
+    const data = incomingCallData;
+    incomingCallContainer.classList.add('hidden'); // Hide notification
+    incomingCallData = null; // Clear stored data
 
-        peers[data.from.username] = peer;
+    const peer = new SimplePeer({
+        initiator: false,
+        trickle: false,
+        stream: localStream
+    });
 
-        peer.on('signal', signalData => {
-            socket.emit('answer call', { signal: signalData, to: data.from.id });
-        });
-        
-        peer.signal(data.signal); 
-        peer.on('stream', stream => handleRemoteStream(stream, data.from.username));
-        peer.on('close', () => handlePeerClose(data.from.username));
-        peer.on('error', (err) => {
-            console.error("Peer connection error:", err);
-            handlePeerClose(data.from.username);
-        });
-    }
+    peers[data.from.username] = peer;
+
+    peer.on('signal', signalData => {
+        socket.emit('answer call', { signal: signalData, to: data.from.id });
+    });
+    
+    peer.signal(data.signal); 
+    peer.on('stream', stream => handleRemoteStream(stream, data.from.username));
+    peer.on('close', () => handlePeerClose(data.from.username));
+    peer.on('error', (err) => {
+        console.error("Peer connection error:", err);
+        handlePeerClose(data.from.username);
+    });
+});
+
+declineCallButton.addEventListener('click', () => {
+    // We could add a signal here to tell the caller the call was declined
+    incomingCallContainer.classList.add('hidden');
+    incomingCallData = null;
 });
 
 socket.on('call answered', (signal) => {
@@ -225,7 +247,6 @@ socket.on('call answered', (signal) => {
     }
 });
 
-// New listener for when the other user ends the call
 socket.on('call ended', () => {
     for (const user in peers) {
         if (peers[user]) {
