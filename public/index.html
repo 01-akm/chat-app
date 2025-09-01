@@ -7,9 +7,16 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <h1>Welcome to the Chat App!</h1>
-    <p>Our server is up and running.</p>
-</body>
-<script src="/socket.io/socket.io.js"></script>
+    <!-- This list will hold all our chat messages -->
+    <ul id="messages"></ul>
+
+    <!-- The form for typing and sending messages -->
+    <form id="form" action="">
+      <input id="input" autocomplete="off" placeholder="Type a message..." /><button>Send</button>
+    </form>
+
+    <script src="/socket.io/socket.io.js"></script>
     <script src="client.js"></script>
+</body>
 </html>
+
