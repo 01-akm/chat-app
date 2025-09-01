@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <!-- Username input container -->
+    <!-- Username Input Section -->
     <div id="username-container">
         <form id="username-form">
             <input id="username-input" autocomplete="off" placeholder="Enter your username" />
@@ -15,32 +15,44 @@
         </form>
     </div>
 
-    <!-- Main application container -->
+    <!-- Main App Container -->
     <div id="app-container" class="hidden">
-        <!-- Sidebar for online users -->
+        <!-- Sidebar for Users and Voice Chat -->
         <div id="sidebar">
             <h2>Online Users</h2>
-            <ul id="user-list">
-                <!-- Usernames will be dynamically inserted here -->
-            </ul>
+            <ul id="user-list"></ul>
+            
+            <!-- Voice Chat Status and Controls (Initially Hidden) -->
+            <div id="voice-chat-status" class="hidden">
+                <h3>In Call</h3>
+                <div id="call-info"></div>
+                <div id="voice-chat-controls">
+                    <button id="mute-button">Mute</button>
+                    <button id="hang-up-button" class="hang-up-button">Hang Up</button>
+                </div>
+            </div>
         </div>
-        
-        <!-- Main chat container -->
+
+        <!-- Main Chat Area -->
         <div id="chat-container">
             <ul id="messages"></ul>
             <div id="typing-indicator"></div>
-            <form id="form" action="">
-                <!-- Hidden file input for selecting images -->
-                <input id="file-input" type="file" accept="image/*" class="hidden"/>
-                <!-- Button to trigger the file input -->
-                <button type="button" id="file-button">📎</button>
-                <input id="input" autocomplete="off" placeholder="Type a message..." /><button>Send</button>
+            <form id="form">
+                <button type="button" id="file-button" title="Send a file">📎</button>
+                <input type="file" id="file-input" class="hidden">
+
+                <input id="input" autocomplete="off" placeholder="Type a message..." />
+                <button type="submit">Send</button>
             </form>
         </div>
+        
+        <!-- Container for remote audio streams -->
+        <div id="voice-chat-container"></div>
     </div>
 
-    <!-- Load Socket.IO and our client-side script -->
+    <!-- Libraries -->
     <script src="/socket.io/socket.io.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/simple-peer@9.11.1/simplepeer.min.js"></script>
     <script src="client.js"></script>
 </body>
 </html>
