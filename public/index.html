@@ -7,16 +7,23 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <!-- This list will hold all our chat messages -->
-    <ul id="messages"></ul>
+    <!-- Container for username input -->
+    <div id="username-container">
+        <form id="username-form" action="">
+            <input id="username-input" autocomplete="off" placeholder="Enter your username" autofocus />
+            <button>Join Chat</button>
+        </form>
+    </div>
 
-    <!-- This paragraph will display the "is typing..." indicator -->
-    <p id="typing-indicator"></p>
-
-    <!-- The form for typing and sending messages -->
-    <form id="form" action="">
-      <input id="input" autocomplete="off" placeholder="Type a message..." /><button>Send</button>
-    </form>
+    <!-- Main chat container, hidden by default -->
+    <div id="chat-container" class="hidden">
+        <ul id="messages"></ul>
+        <p id="typing-indicator"></p>
+        <form id="form" action="">
+          <input id="input" autocomplete="off" placeholder="Type a message..." />
+          <button>Send</button>
+        </form>
+    </div>
 
     <script src="/socket.io/socket.io.js"></script>
     <script src="client.js"></script>
