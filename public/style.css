@@ -1,178 +1,198 @@
-/* Basic styling */
+/* General styling */
 body {
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    margin: 0;
-    background-color: #f0f2f5;
-    /* Remove centering to allow app-container to fill the page */
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  margin: 0;
+  background-color: #f0f2f5;
+  color: #1c1e21;
+  /* New: Center the app on the page for a better desktop experience */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
 }
 
-/* Styles for the username input section, which is centered on its own */
-#username-container {
-    padding: 2rem;
-    background: white;
-    border-radius: 8px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-}
-
-#username-form {
-    display: flex;
-    gap: 0.5rem;
-}
-
-#username-input {
-    border: 1px solid #ddd;
-    padding: 0.75rem 1rem;
-    border-radius: 2rem;
-    flex-grow: 1;
-}
-
-#username-form > button {
-    background: #0084ff;
-    border: none;
-    padding: 0 1.5rem;
-    border-radius: 2rem;
-    color: #fff;
-    font-weight: bold;
-    cursor: pointer;
-}
-
-/* Class to hide elements */
 .hidden {
     display: none !important;
 }
 
-/* NEW: Main app container using flexbox */
+/* Username form styling */
+#username-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+#username-form {
+    display: flex;
+    gap: 10px;
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+#username-form input {
+    border: 1px solid #dddfe2;
+    padding: 10px;
+    border-radius: 6px;
+    flex-grow: 1;
+}
+
+#username-form button {
+    background-color: #1877f2;
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+/* Main App Layout */
 #app-container {
     display: flex;
-    height: 100vh;
-    width: 100vw;
+    /* Changed: Constrain size and add shadow for a cleaner look */
+    width: 100%;
+    max-width: 1000px; /* Limit width on larger screens */
+    height: 90vh;
+    max-height: 720px; /* Limit height */
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    border-radius: 12px;
+    overflow: hidden; /* Important for the border-radius to apply to children */
+    background-color: #fff; /* Base background */
 }
 
-/* NEW: Sidebar for online users */
-#user-list-container {
-    width: 240px;
-    flex-shrink: 0; /* Prevent sidebar from shrinking */
-    background-color: #f7f7f7;
-    border-right: 1px solid #e0e0e0;
-    padding: 1rem;
-    overflow-y: auto;
+#sidebar {
+    width: 240px; /* A bit wider for names */
+    background-color: #f5f5f5;
+    border-right: 1px solid #dddfe2;
+    padding: 15px;
+    box-sizing: border-box;
     display: flex;
     flex-direction: column;
-    box-sizing: border-box;
+    flex-shrink: 0;
 }
 
-#user-list-container h2 {
-    margin: 0 0 1rem 0;
-    border-bottom: 1px solid #ddd;
-    padding-bottom: 0.75rem;
-    color: #333;
-    font-size: 1.1rem;
+#sidebar h2 {
+    margin-top: 0;
+    font-size: 1.1em;
+    color: #606770;
 }
 
 #user-list {
     list-style-type: none;
     padding: 0;
     margin: 0;
-}
-
-#user-list li {
-    padding: 0.5rem 0;
-    color: #555;
-    border-bottom: 1px solid #eee;
-}
-
-/* UPDATED: Main chat container fills the remaining space */
-#chat-container {
-    flex-grow: 1;
-    display: flex;
-    flex-direction: column;
-    height: 100%;
-    width: 100%; /* Will be constrained by flex parent */
-    background: white;
-}
-
-
-#messages {
-    list-style-type: none;
-    margin: 0;
-    padding: 1rem;
     flex-grow: 1;
     overflow-y: auto;
 }
 
-#messages > li {
-    padding: 0.5rem 1rem;
-    margin-bottom: 0.75rem;
-    background: #e4e6eb;
-    border-radius: 18px;
-    max-width: 70%;
-    word-wrap: break-word;
-    clear: both;
-    float: left;
+#user-list li {
+    padding: 8px 0;
+    border-bottom: 1px solid #e0e0e0;
 }
 
-/* Adding the username to the message bubble */
+#chat-container {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    background-color: #fff;
+}
+
+/* Chat messages styling */
+#messages {
+    list-style-type: none;
+    margin: 0;
+    padding: 20px;
+    flex-grow: 1;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+}
+
+
+#messages > li {
+    padding: 8px 12px;
+    margin-bottom: 10px;
+    max-width: 70%;
+    border-radius: 18px;
+    line-height: 1.4;
+    display: flex;
+    flex-direction: column;
+}
+
 #messages > li strong {
     display: block;
+    font-size: 0.8em;
+    color: #606770;
     margin-bottom: 4px;
-    font-size: 0.8rem;
-    color: #65676b;
 }
 
-#messages > li.my-message {
+#messages > li:not(.my-message) {
+    background: #e4e6eb;
+    align-self: flex-start;
+}
+
+.my-message {
     background: #0084ff;
     color: white;
-    float: right;
+    align-self: flex-end;
 }
 
-#messages > li.my-message strong {
-    color: #e0f0ff; /* Lighter color for own username */
+.my-message strong {
+    color: rgba(255, 255, 255, 0.8);
 }
 
-#typing-indicator {
-    padding: 0 1.5rem;
-    height: 1rem;
-    font-style: italic;
-    color: #888;
+/* Styling for images in messages */
+#messages img {
+    max-width: 100%;
+    /* Changed: Smaller image height to be less intrusive */
+    max-height: 200px;
+    border-radius: 8px;
+    margin-top: 5px;
+    object-fit: cover;
 }
 
+/* Input form styling */
 #form {
-    background: #f0f2f5;
-    padding: 0.5rem 1rem;
+    background: white;
+    padding: 15px;
     display: flex;
-    height: 3rem;
-    box-sizing: border-box;
-    border-top: 1px solid #ddd;
+    border-top: 1px solid #dddfe2;
+    align-items: center;
+}
+
+#file-button {
+    background: transparent;
+    border: none;
+    padding: 0 10px;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: #606770;
 }
 
 #input {
-    border: none;
-    padding: 0 1rem;
+    border: 1px solid #dddfe2;
+    padding: 10px;
     flex-grow: 1;
-    border-radius: 2rem;
-    margin: 0 0.5rem;
-    background-color: #fff;
-    border: 1px solid #ddd;
-}
-
-#input:focus {
-    outline: none;
-    border-color: #0084ff;
+    border-radius: 18px;
+    margin-right: 10px;
 }
 
 #form > button {
-    background: #0084ff;
+    background: #1877f2;
     border: none;
-    padding: 0 1.5rem;
-    margin: 0;
-    border-radius: 2rem;
-    outline: none;
-    color: #fff;
-    font-weight: bold;
+    padding: 10px 15px;
+    border-radius: 6px;
+    color: white;
     cursor: pointer;
+}
+
+/* Typing indicator styling */
+#typing-indicator {
+    padding: 0 20px 10px;
+    font-style: italic;
+    color: #606770;
+    height: 20px; /* Reserve space to prevent layout shift */
 }
 
