@@ -7,33 +7,35 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <!-- Container for username input -->
+    <!-- Username input container -->
     <div id="username-container">
-        <form id="username-form" action="">
-            <input id="username-input" autocomplete="off" placeholder="Enter your username" autofocus />
+        <form id="username-form">
+            <input id="username-input" autocomplete="off" placeholder="Enter your username" />
             <button>Join Chat</button>
         </form>
     </div>
 
-    <!-- Main app container, hidden by default -->
+    <!-- Main application container -->
     <div id="app-container" class="hidden">
         <!-- Sidebar for online users -->
-        <aside id="user-list-container">
+        <div id="sidebar">
             <h2>Online Users</h2>
-            <ul id="user-list"></ul>
-        </aside>
-
+            <ul id="user-list">
+                <!-- Usernames will be dynamically inserted here -->
+            </ul>
+        </div>
+        
         <!-- Main chat container -->
         <div id="chat-container">
             <ul id="messages"></ul>
-            <p id="typing-indicator"></p>
+            <div id="typing-indicator"></div>
             <form id="form" action="">
-              <input id="input" autocomplete="off" placeholder="Type a message..." />
-              <button>Send</button>
+                <input id="input" autocomplete="off" placeholder="Type a message..." /><button>Send</button>
             </form>
         </div>
     </div>
 
+    <!-- Load Socket.IO and our client-side script -->
     <script src="/socket.io/socket.io.js"></script>
     <script src="client.js"></script>
 </body>
