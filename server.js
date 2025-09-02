@@ -2,6 +2,7 @@ const express = require('express');
 const http = require('http');
 const { Server } = require("socket.io");
 const path = require('path');
+const { randomUUID } = require('crypto'); // Import the UUID generator
 
 const app = express();
 const server = http.createServer(app);
@@ -40,23 +41,33 @@ io.on('connection', (socket) => {
 
     // Handle incoming chat messages
     socket.on('chat message', (data) => {
-        io.emit('chat message', { user: socket.username, text: data.text });
+        const messageId = randomUUID();
+        io.emit('chat message', { id: messageId, user: socket.username, text: data.text });
     });
     
     // Handle private messages
     socket.on('private message', (data) => {
         const recipientSocketId = Object.keys(users).find(id => users[id] === data.to);
         if (recipientSocketId) {
+            const messageId = randomUUID();
+            const messageData = { id: messageId, from: socket.username, text: data.text };
             // Send to the recipient
-            io.to(recipientSocketId).emit('private message', { from: socket.username, text: data.text });
+            io.to(recipientSocketId).emit('private message', messageData);
             // Send back to the sender
-            socket.emit('private message', { from: socket.username, text: data.text });
+            socket.emit('private message', messageData);
         }
     });
 
     // Handle file uploads
     socket.on('upload file', (fileData) => {
-        io.emit('file message', { user: socket.username, file: fileData });
+        const messageId = randomUUID();
+        io.emit('file message', { id: messageId, user: socket.username, file: fileData });
+    });
+
+    // Handle delete message event
+    socket.on('delete message', (messageId) => {
+        // Broadcast to all clients that a message should be deleted
+        io.emit('message deleted', messageId);
     });
 
     // --- WebRTC Signaling ---
