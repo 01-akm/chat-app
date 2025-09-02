@@ -61,9 +61,12 @@ io.on('connection', (socket) => {
 
     // --- WebRTC Signaling ---
     socket.on('call user', (data) => {
-        const recipientSocket = Object.values(io.sockets.sockets).find(s => s.username === data.userToCall);
-        if (recipientSocket) {
-            io.to(recipientSocket.id).emit('call received', {
+        // Find the socket ID of the user to call using our users object
+        const recipientSocketId = Object.keys(users).find(id => users[id] === data.userToCall);
+        
+        if (recipientSocketId) {
+            // If the user is found, emit the call received event to their specific socket ID
+            io.to(recipientSocketId).emit('call received', {
                 signal: data.signalData,
                 from: { id: socket.id, username: socket.username }
             });
@@ -75,9 +78,9 @@ io.on('connection', (socket) => {
     });
     
     socket.on('hang up', (data) => {
-        const recipientSocket = Object.values(io.sockets.sockets).find(s => s.username === data.user);
-        if (recipientSocket) {
-            io.to(recipientSocket.id).emit('call ended');
+        const recipientSocketId = Object.keys(users).find(id => users[id] === data.user);
+        if (recipientSocketId) {
+            io.to(recipientSocketId).emit('call ended');
         }
     });
 });
