@@ -18,11 +18,18 @@
 
     <!-- Main Chat Application (hidden by default) -->
     <div id="app-container" class="hidden">
-        <!-- Sidebar for users and voice chat -->
+        <!-- Sidebar for users and voice/video chat -->
         <div id="sidebar">
             <h2>Online Users</h2>
             <ul id="user-list"></ul>
-            <div id="voice-chat-container"></div>
+            
+            <!-- Video Chat Container -->
+            <div id="video-container" class="hidden">
+                <video id="remote-video" autoplay></video>
+                <video id="local-video" autoplay muted></video>
+            </div>
+
+            <div id="voice-chat-container"></div> <!-- For audio elements -->
             <div id="voice-chat-status" class="hidden">
                 <div id="call-info"></div>
                 <div id="voice-controls">
