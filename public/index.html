@@ -7,75 +7,67 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <!-- Username Input Section -->
     <div id="username-container">
-        <form id="username-form">
-            <input id="username-input" autocomplete="off" placeholder="Enter your username" />
-            <button>Join Chat</button>
-        </form>
-    </div>
-
-    <!-- Main Application Container -->
-    <div id="app-container" class="hidden">
-        <!-- Sidebar for Users and Voice Chat -->
-        <div id="sidebar">
-            <h2>Online Users</h2>
-            <ul id="user-list"></ul>
-            
-            <!-- Voice/Video Chat Status and Controls -->
-            <div id="voice-chat-status" class="hidden">
-                <p id="call-info"></p>
-                <button id="mute-button">Mute</button>
-                <button id="hang-up-button">Hang Up</button>
-            </div>
-        </div>
-
-        <!-- Main Chat Area -->
-        <div id="chat-area">
-            <!-- Video Container for Video Calls -->
-            <div id="video-container">
-                 <video id="local-video" autoplay muted></video>
-                 <video id="remote-video" class="hidden" autoplay></video>
-            </div>
-
-            <!-- Chat Messages -->
-            <div id="chat-container">
-                <ul id="messages"></ul>
-            </div>
-
-            <!-- Typing Indicator -->
-            <div id="typing-indicator"></div>
-
-            <!-- Private Message Indicator -->
-            <div id="private-message-indicator" class="hidden">
-                <span>Private message to: <strong id="private-message-user"></strong></span>
-                <span id="clear-private-message"> (Clear)</span>
-            </div>
-
-            <!-- Message Input Form -->
-            <form id="form">
-                <input type="file" id="file-input" class="hidden" accept="image/*" />
-                <button type="button" id="file-button">📎</button>
-                <input id="input" autocomplete="off" placeholder="Type a message..." />
-                <button type="submit">Send</button>
+        <div class="form-card">
+            <h1>Welcome to the Chat</h1>
+            <p>Please enter your username to join.</p>
+            <form id="username-form">
+                <input id="username-input" autocomplete="off" placeholder="Enter your username" />
+                <button>Join Chat</button>
             </form>
         </div>
     </div>
-    
-    <!-- Incoming Call Notification -->
-    <div id="incoming-call-container" class="hidden">
-        <p id="incoming-call-info"></p>
-        <button id="accept-call-button">Accept</button>
-        <button id="decline-call-button">Decline</button>
+
+    <div id="app-container" class="hidden">
+        <div id="sidebar">
+            <h2>Online Users</h2>
+            <ul id="user-list"></ul>
+            <div id="voice-chat-status" class="hidden">
+                <h3>In Call</h3>
+                <p id="call-info"></p>
+                <div class="call-controls">
+                    <button id="mute-button">Mute</button>
+                    <button id="toggle-video-button">Start Video</button>
+                    <button id="hang-up-button">Hang Up</button>
+                </div>
+            </div>
+            <div id="voice-chat-container"></div>
+        </div>
+        <div id="chat-window">
+             <div id="video-container">
+                <video id="local-video" autoplay playsinline muted class="hidden"></video>
+                <video id="remote-video" autoplay playsinline class="hidden"></video>
+            </div>
+            <div id="chat-container">
+                <ul id="messages"></ul>
+            </div>
+            <div id="typing-indicator"></div>
+
+             <div id="private-message-indicator" class="hidden">
+                <span>Private message to: <strong id="private-message-user"></strong></span>
+                <button id="clear-private-message" title="Go back to public chat">×</button>
+            </div>
+
+            <form id="form">
+                <input id="input" autocomplete="off" placeholder="Type a message..." />
+                <button id="file-button" type="button">📎</button>
+                <input type="file" id="file-input" class="hidden" accept="image/*" />
+                <button id="send-button">Send</button>
+            </form>
+        </div>
     </div>
 
-    <!-- Hidden audio container for voice chat -->
-    <div id="voice-chat-container"></div>
-    
-    <!-- Scripts -->
+    <div id="incoming-call-container" class="hidden">
+        <p id="incoming-call-info"></p>
+        <div class="button-group">
+            <button id="accept-call-button">Accept</button>
+            <button id="decline-call-button">Decline</button>
+        </div>
+    </div>
+
     <script src="/socket.io/socket.io.js"></script>
+    <script src="https://webrtc.github.io/adapter/adapter-latest.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/simple-peer@9.11.1/simplepeer.min.js"></script>
     <script src="client.js"></script>
 </body>
 </html>
-
