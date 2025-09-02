@@ -19,6 +19,8 @@ io.on('connection', (socket) => {
     socket.on('set username', (username) => {
         socket.username = username;
         users[socket.id] = username;
+        // Notify all other users that a new user has joined
+        socket.broadcast.emit('user joined', username);
         io.emit('update user list', Object.values(users));
     });
 
@@ -101,8 +103,12 @@ io.on('connection', (socket) => {
     
     socket.on('disconnect', () => {
         console.log('A user has disconnected...');
-        delete users[socket.id];
-        io.emit('update user list', Object.values(users));
+        if (socket.username) {
+            // Notify all users that this user has left
+            io.emit('user left', socket.username);
+            delete users[socket.id];
+            io.emit('update user list', Object.values(users));
+        }
     });
 });
 
