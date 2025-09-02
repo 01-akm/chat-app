@@ -26,24 +26,17 @@ const messages = document.getElementById('messages');
 const typingIndicator = document.getElementById('typing-indicator');
 const fileButton = document.getElementById('file-button');
 const fileInput = document.getElementById('file-input');
-
-// --- New Private Message Elements ---
 const privateMessageIndicator = document.getElementById('private-message-indicator');
 const privateMessageInfo = document.getElementById('private-message-info');
 const clearPrivateChat = document.getElementById('clear-private-chat');
 
 let username = '';
 let typingTimeout;
-
-// --- New Private Message State ---
-let privateMessageTarget = null; // Username of the person we are PMing
-
-// --- WebRTC Voice Chat Variables ---
+let privateMessageTarget = null; 
 let localStream;
-const peers = {}; // key: username, value: peer object
+const peers = {};
 let incomingCallData = null; 
 
-// Handle username submission
 usernameForm.addEventListener('submit', (e) => {
     e.preventDefault(); 
     if (usernameInput.value) {
@@ -58,15 +51,12 @@ usernameForm.addEventListener('submit', (e) => {
     }
 });
 
-// --- Updated Form Submission to handle PMs ---
 form.addEventListener('submit', (e) => {
   e.preventDefault(); 
   if (input.value) {
     if (privateMessageTarget) {
-        // If we have a private chat target, send a private message
         socket.emit('private message', { to: privateMessageTarget, text: input.value });
     } else {
-        // Otherwise, send a public message
         socket.emit('chat message', { text: input.value });
     }
     socket.emit('stop typing');
@@ -74,6 +64,21 @@ form.addEventListener('submit', (e) => {
   }
 });
 
+function displayNotification(message) {
+    const item = document.createElement('li');
+    item.className = 'notification';
+    item.textContent = message;
+    messages.appendChild(item);
+    chatContainer.scrollTop = chatContainer.scrollHeight;
+}
+
+socket.on('user joined', (user) => {
+    displayNotification(`${user} has joined the chat`);
+});
+
+socket.on('user left', (user) => {
+    displayNotification(`${user} has left the chat`);
+});
 
 socket.on('chat message', (data) => {
   const item = document.createElement('li');
@@ -106,28 +111,21 @@ socket.on('file message', (data) => {
     chatContainer.scrollTop = chatContainer.scrollHeight;
 });
 
-// --- New listener for incoming private messages ---
 socket.on('private message', (data) => {
     const item = document.createElement('li');
-    item.classList.add('private-message'); // Add the new class for styling
-
+    item.classList.add('private-message');
     const userElement = document.createElement('strong');
     userElement.textContent = data.from;
-    
     const textElement = document.createElement('span');
     textElement.textContent = data.text;
-
     item.appendChild(userElement);
     item.appendChild(textElement);
-
     if (data.from === username) {
         item.classList.add('my-message');
     }
-
     messages.appendChild(item);
     chatContainer.scrollTop = chatContainer.scrollHeight;
 });
-
 
 socket.on('typing', (user) => {
     typingIndicator.textContent = `${user} is typing...`;
@@ -137,7 +135,6 @@ socket.on('stop typing', () => {
     typingIndicator.textContent = '';
 });
 
-// --- Updated User List to handle clicks for PMs ---
 socket.on('update user list', (users) => {
     userList.innerHTML = ''; 
     users.forEach(user => {
@@ -146,9 +143,8 @@ socket.on('update user list', (users) => {
         const item = document.createElement('li');
         const usernameSpan = document.createElement('span');
         usernameSpan.textContent = user;
-        usernameSpan.style.flexGrow = '1'; // Make the name take up space
+        usernameSpan.style.flexGrow = '1';
         
-        // When a username is clicked, set them as the PM target
         item.onclick = () => {
             privateMessageTarget = user;
             privateMessageInfo.textContent = `Private message to: ${user}`;
@@ -162,7 +158,7 @@ socket.on('update user list', (users) => {
         callButton.textContent = 'Call';
         callButton.className = 'call-button';
         callButton.onclick = (e) => {
-            e.stopPropagation(); // Prevent the li's onclick from firing
+            e.stopPropagation();
             startCall(user);
         };
         
@@ -171,13 +167,11 @@ socket.on('update user list', (users) => {
     });
 });
 
-// --- New event listener for the 'clear private chat' button ---
 clearPrivateChat.addEventListener('click', () => {
     privateMessageTarget = null;
     privateMessageIndicator.classList.add('hidden');
     input.focus();
 });
-
 
 fileButton.addEventListener('click', () => {
     fileInput.click();
@@ -195,7 +189,6 @@ fileInput.addEventListener('change', (e) => {
     e.target.value = '';
 });
 
-// --- WebRTC Voice Chat Functions (unchanged) ---
 function startCall(userToCall) {
     if (!localStream) { return alert("Microphone not ready."); }
     if (Object.keys(peers).length > 0) { return alert("You are already in a call."); }
