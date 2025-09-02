@@ -1,207 +1,293 @@
-/* General styling */
+/* Basic styling */
 body {
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-  margin: 0;
-  background-color: #f0f2f5;
-  color: #1c1e21;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
-}
-
-.hidden {
-    display: none !important;
-}
-
-/* Username form styling */
-#username-container {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    margin: 0;
+    background-color: #f0f2f5;
+    color: #1c1e21;
     display: flex;
     justify-content: center;
     align-items: center;
     height: 100vh;
 }
 
+.hidden {
+    display: none !important;
+}
+
+/* Username Form Styling */
+#username-container {
+    padding: 30px;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    text-align: center;
+}
+
 #username-form {
     display: flex;
     gap: 10px;
-    background: white;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
-#username-form input {
-    border: 1px solid #dddfe2;
+#username-input {
     padding: 10px;
+    border: 1px solid #dddfe2;
     border-radius: 6px;
     flex-grow: 1;
-}
-
-#username-form button {
-    background-color: #1877f2;
-    color: white;
-    border: none;
-    padding: 10px 15px;
-    border-radius: 6px;
-    cursor: pointer;
 }
 
 /* Main App Layout */
 #app-container {
     display: flex;
-    width: 100%;
-    max-width: 1000px;
     height: 90vh;
-    max-height: 720px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-    border-radius: 12px;
+    width: 80vw;
+    max-width: 1200px;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     overflow: hidden;
-    background-color: #fff;
+    position: relative; /* For positioning the call notification */
+}
+
+/* Incoming Call Notification Styles */
+#incoming-call-container {
+    position: absolute;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: #28a745; /* Green */
+    color: white;
+    padding: 15px 25px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+#incoming-call-container button {
+    padding: 8px 16px;
+    border-radius: 5px;
+    border: 1px solid white;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+#accept-call-button {
+    background-color: white;
+    color: #28a745;
+}
+
+#decline-call-button {
+    background-color: transparent;
+    color: white;
 }
 
 #sidebar {
-    width: 240px;
-    background-color: #f5f5f5;
+    width: 250px;
+    background-color: #f5f6f7;
     border-right: 1px solid #dddfe2;
-    padding: 15px;
-    box-sizing: border-box;
+    padding: 20px;
     display: flex;
     flex-direction: column;
-    flex-shrink: 0;
 }
 
 #sidebar h2 {
     margin-top: 0;
-    font-size: 1.1em;
-    color: #606770;
+    font-size: 1.2em;
+    border-bottom: 1px solid #ccd0d5;
+    padding-bottom: 10px;
 }
 
 #user-list {
     list-style-type: none;
     padding: 0;
-    margin: 0;
     flex-grow: 1;
     overflow-y: auto;
 }
 
 #user-list li {
-    padding: 8px 0;
-    border-bottom: 1px solid #e0e0e0;
+    padding: 10px 5px;
     display: flex;
     justify-content: space-between;
     align-items: center;
+    border-radius: 6px;
+    cursor: pointer; /* Make names clickable */
 }
 
-/* Call button styling */
+#user-list li:hover {
+    background-color: #e4e6eb; /* Highlight on hover */
+}
+
 .call-button {
-    background-color: #42b72a;
-    color: white;
-    border: none;
-    padding: 4px 8px;
-    font-size: 0.8em;
-    border-radius: 4px;
+    padding: 5px 10px;
+    border: 1px solid #007bff;
+    background-color: transparent;
+    color: #007bff;
+    border-radius: 5px;
     cursor: pointer;
+    transition: background-color 0.2s, color 0.2s;
+    margin-left: 10px;
+}
+.call-button:hover {
+    background-color: #007bff;
+    color: white;
+}
+
+
+/* Voice Chat Controls */
+#voice-chat-status {
+    border-top: 1px solid #ccd0d5;
+    padding-top: 15px;
+}
+#voice-chat-controls {
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+}
+#voice-chat-controls button {
+    flex-grow: 1;
+    padding: 8px;
+    border-radius: 5px;
+    border: none;
+    cursor: pointer;
+}
+#mute-button {
+    background-color: #ffc107;
+}
+#hang-up-button {
+    background-color: #dc3545;
+    color: white;
+}
+
+
+#chat-window {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
 }
 
 #chat-container {
     flex-grow: 1;
-    display: flex;
-    flex-direction: column;
-    background-color: #fff;
+    padding: 20px;
+    overflow-y: auto;
 }
 
-/* Chat messages styling */
 #messages {
     list-style-type: none;
     margin: 0;
-    padding: 20px;
-    flex-grow: 1;
-    overflow-y: auto;
-    display: flex;
-    flex-direction: column;
+    padding: 0;
 }
 
-
-#messages > li {
+#messages li {
     padding: 8px 12px;
     margin-bottom: 10px;
     max-width: 70%;
+    word-wrap: break-word;
     border-radius: 18px;
     line-height: 1.4;
-    display: flex;
-    flex-direction: column;
 }
 
-#messages > li strong {
+#messages li strong {
     display: block;
     font-size: 0.8em;
-    color: #606770;
+    color: #65676b;
     margin-bottom: 4px;
 }
 
-#messages > li:not(.my-message) {
+#messages li {
     background: #e4e6eb;
     align-self: flex-start;
 }
 
-.my-message {
+#messages li.my-message {
     background: #0084ff;
     color: white;
-    align-self: flex-end;
+    margin-left: auto;
 }
 
-.my-message strong {
-    color: rgba(255, 255, 255, 0.8);
+#messages li.my-message strong {
+    display: none; /* Hide my own username */
 }
 
-#messages img {
+/* --- New Private Message Style --- */
+#messages li.private-message {
+    background-color: #f0abff; /* A purplish color for PMs */
+    border: 1px solid #d946ef;
+}
+#messages li.private-message strong::after {
+    content: ' (private)';
+    font-style: italic;
+    color: #a300cc;
+}
+
+#messages li img {
     max-width: 100%;
-    max-height: 200px;
-    border-radius: 8px;
+    border-radius: 15px;
     margin-top: 5px;
-    object-fit: cover;
 }
 
-/* Input form styling */
-#form {
-    background: white;
-    padding: 15px;
-    display: flex;
+/* --- New Private Message Indicator Styles --- */
+#private-message-indicator {
+    padding: 5px 20px;
+    background-color: #e7f3ff;
     border-top: 1px solid #dddfe2;
+    display: flex;
+    justify-content: space-between;
     align-items: center;
+    font-size: 0.9em;
 }
 
-#file-button {
-    background: transparent;
+#clear-private-chat {
+    background: none;
     border: none;
-    padding: 0 10px;
-    font-size: 1.5rem;
+    font-size: 1.2em;
     cursor: pointer;
-    color: #606770;
+    color: #65676b;
+}
+
+
+#form {
+    display: flex;
+    padding: 20px;
+    border-top: 1px solid #dddfe2;
+    background-color: #f5f6f7;
 }
 
 #input {
-    border: 1px solid #dddfe2;
-    padding: 10px;
-    flex-grow: 1;
-    border-radius: 18px;
-    margin-right: 10px;
-}
-
-#form > button {
-    background: #1877f2;
     border: none;
     padding: 10px 15px;
-    border-radius: 6px;
+    flex-grow: 1;
+    border-radius: 18px;
+    background-color: #e4e6eb;
+}
+#input:focus {
+    outline: none;
+}
+
+#form button {
+    background: #0084ff;
+    border: none;
+    padding: 0 20px;
+    margin-left: 10px;
     color: white;
+    border-radius: 18px;
     cursor: pointer;
+}
+
+.file-upload-button {
+    background: none;
+    border: none;
+    font-size: 1.5em;
+    cursor: pointer;
+    color: #65676b;
+    padding: 0 10px;
 }
 
 #typing-indicator {
     padding: 0 20px 10px;
-    font-style: italic;
-    color: #606770;
     height: 20px;
+    font-style: italic;
+    color: #65676b;
 }
 
