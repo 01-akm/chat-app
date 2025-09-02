@@ -165,7 +165,6 @@ body {
     margin-top: 5px;
 }
 
-/* --- New Notification Style --- */
 #messages li.notification {
     background-color: transparent;
     color: #888;
@@ -228,7 +227,25 @@ body {
     padding: 0 1rem;
 }
 
-/* Voice Chat UI */
+/* Video & Voice Chat UI */
+#video-container {
+    position: relative;
+    background-color: #000;
+    margin-bottom: 1rem;
+}
+#remote-video {
+    width: 100%;
+    display: block;
+}
+#local-video {
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+    width: 80px;
+    border: 2px solid white;
+    border-radius: 5px;
+}
+
 #voice-chat-status {
     padding: 1rem;
     border-top: 1px solid #ccc;
