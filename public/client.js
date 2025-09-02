@@ -18,6 +18,11 @@ const incomingCallInfo = document.getElementById('incoming-call-info');
 const acceptCallButton = document.getElementById('accept-call-button');
 const declineCallButton = document.getElementById('decline-call-button');
 
+// --- New Video Elements ---
+const videoContainer = document.getElementById('video-container');
+const localVideo = document.getElementById('local-video');
+const remoteVideo = document.getElementById('remote-video');
+
 // Chat section elements
 const chatContainer = document.getElementById('chat-container');
 const form = document.getElementById('form');
@@ -31,35 +36,41 @@ const privateMessageInfo = document.getElementById('private-message-info');
 const clearPrivateChat = document.getElementById('clear-private-chat');
 
 let username = '';
-let typingTimeout;
-let privateMessageTarget = null; 
+let privateMessageTarget = null;
 let localStream;
 const peers = {};
-let incomingCallData = null; 
+let incomingCallData = null;
 
 usernameForm.addEventListener('submit', (e) => {
-    e.preventDefault(); 
+    e.preventDefault();
     if (usernameInput.value) {
         username = usernameInput.value.trim();
         socket.emit('set username', username);
         usernameContainer.classList.add('hidden');
         appContainer.classList.remove('hidden');
         input.focus();
-        navigator.mediaDevices.getUserMedia({ video: false, audio: true })
-            .then(stream => { localStream = stream; })
-            .catch(err => { console.error("Error accessing microphone:", err); });
+
+        // --- Request Camera and Microphone ---
+        navigator.mediaDevices.getUserMedia({ video: true, audio: true })
+            .then(stream => {
+                localStream = stream;
+                localVideo.srcObject = stream; // Display self-view
+            })
+            .catch(err => {
+                console.error("Error accessing media devices:", err);
+                alert("You must allow camera and microphone access to use video chat.");
+            });
     }
 });
 
 form.addEventListener('submit', (e) => {
-  e.preventDefault(); 
+  e.preventDefault();
   if (input.value) {
     if (privateMessageTarget) {
         socket.emit('private message', { to: privateMessageTarget, text: input.value });
     } else {
         socket.emit('chat message', { text: input.value });
     }
-    socket.emit('stop typing');
     input.value = '';
   }
 });
@@ -100,7 +111,7 @@ socket.on('file message', (data) => {
     const userElement = document.createElement('strong');
     userElement.textContent = data.user;
     const imageElement = document.createElement('img');
-    imageElement.src = data.file.data; 
+    imageElement.src = data.file.data;
     imageElement.alt = data.file.name;
     item.appendChild(userElement);
     item.appendChild(imageElement);
@@ -127,31 +138,24 @@ socket.on('private message', (data) => {
     chatContainer.scrollTop = chatContainer.scrollHeight;
 });
 
-socket.on('typing', (user) => {
-    typingIndicator.textContent = `${user} is typing...`;
-});
-
-socket.on('stop typing', () => {
-    typingIndicator.textContent = '';
-});
 
 socket.on('update user list', (users) => {
-    userList.innerHTML = ''; 
+    userList.innerHTML = '';
     users.forEach(user => {
         if (user === username) return;
-        
+
         const item = document.createElement('li');
         const usernameSpan = document.createElement('span');
         usernameSpan.textContent = user;
         usernameSpan.style.flexGrow = '1';
-        
+
         item.onclick = () => {
             privateMessageTarget = user;
             privateMessageInfo.textContent = `Private message to: ${user}`;
             privateMessageIndicator.classList.remove('hidden');
             input.focus();
         };
-        
+
         item.appendChild(usernameSpan);
 
         const callButton = document.createElement('button');
@@ -161,7 +165,7 @@ socket.on('update user list', (users) => {
             e.stopPropagation();
             startCall(user);
         };
-        
+
         item.appendChild(callButton);
         userList.appendChild(item);
     });
@@ -189,8 +193,10 @@ fileInput.addEventListener('change', (e) => {
     e.target.value = '';
 });
 
+// --- WebRTC Video Chat Functions ---
+
 function startCall(userToCall) {
-    if (!localStream) { return alert("Microphone not ready."); }
+    if (!localStream) { return alert("Media devices not ready."); }
     if (Object.keys(peers).length > 0) { return alert("You are already in a call."); }
     const peer = new SimplePeer({ initiator: true, trickle: false, stream: localStream });
     peers[userToCall] = peer;
@@ -213,7 +219,7 @@ acceptCallButton.addEventListener('click', () => {
     const peer = new SimplePeer({ initiator: false, trickle: false, stream: localStream });
     peers[data.from.username] = peer;
     peer.on('signal', signalData => { socket.emit('answer call', { signal: signalData, to: data.from.id }); });
-    peer.signal(data.signal); 
+    peer.signal(data.signal);
     peer.on('stream', stream => handleRemoteStream(stream, data.from.username));
     peer.on('close', () => handlePeerClose(data.from.username));
     peer.on('error', (err) => { console.error("Peer connection error:", err); handlePeerClose(data.from.username); });
@@ -235,22 +241,20 @@ socket.on('call ended', () => {
         }
     }
 });
+
+// --- Updated to Handle Video Stream ---
 function handleRemoteStream(stream, user) {
-    let audio = document.querySelector(`audio[data-user="${user}"]`);
-    if (!audio) {
-        audio = document.createElement('audio');
-        audio.setAttribute('data-user', user);
-        audio.autoplay = true;
-        voiceChatContainer.appendChild(audio);
-    }
-    audio.srcObject = stream;
+    remoteVideo.srcObject = stream;
+    videoContainer.classList.remove('hidden');
     voiceChatStatus.classList.remove('hidden');
-    callInfo.textContent = `With ${user}`;
+    callInfo.textContent = `In call with ${user}`;
 }
+
+// --- Updated to Hide Video ---
 function handlePeerClose(user) {
-    const audio = document.querySelector(`audio[data-user="${user}"]`);
-    if (audio) audio.remove();
     if (peers[user]) delete peers[user];
+    videoContainer.classList.add('hidden');
+    remoteVideo.srcObject = null;
     voiceChatStatus.classList.add('hidden');
     callInfo.textContent = '';
     muteButton.textContent = 'Mute';
@@ -263,7 +267,7 @@ muteButton.addEventListener('click', () => {
 hangUpButton.addEventListener('click', () => {
     for (const user in peers) {
         if (peers[user]) {
-            socket.emit('hang up', { user: user }); 
+            socket.emit('hang up', { user: user });
             peers[user].destroy();
         }
     }
