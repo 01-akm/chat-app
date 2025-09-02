@@ -12,9 +12,11 @@ const voiceChatContainer = document.getElementById('voice-chat-container');
 const voiceChatStatus = document.getElementById('voice-chat-status');
 const callInfo = document.getElementById('call-info');
 const muteButton = document.getElementById('mute-button');
+const toggleVideoButton = document.getElementById('toggle-video-button');
 const hangUpButton = document.getElementById('hang-up-button');
 const localVideo = document.getElementById('local-video');
 const remoteVideo = document.getElementById('remote-video');
+const videoContainer = document.getElementById('video-container');
 
 
 // --- New Incoming Call Elements ---
@@ -46,6 +48,7 @@ let privateRecipient = null; // Track who we are private messaging
 let localStream;
 const peers = {}; // key: username, value: peer object
 let incomingCallData = null; // Store incoming call data temporarily
+let isVideoEnabled = false;
 
 // Handle username submission
 usernameForm.addEventListener('submit', (e) => {
@@ -59,14 +62,13 @@ usernameForm.addEventListener('submit', (e) => {
         appContainer.classList.remove('hidden');
         input.focus();
 
-        // Get microphone and camera access
-        navigator.mediaDevices.getUserMedia({ video: true, audio: true })
+        // Get microphone access ONLY
+        navigator.mediaDevices.getUserMedia({ video: false, audio: true })
             .then(stream => {
                 localStream = stream;
-                localVideo.srcObject = stream;
             }).catch(err => {
-                console.error("Error accessing media devices:", err);
-                alert("You must allow microphone and camera access to use video chat.");
+                console.error("Error accessing microphone:", err);
+                alert("You must allow microphone access to use voice chat.");
             });
     }
 });
@@ -266,7 +268,7 @@ fileInput.addEventListener('change', (e) => {
 
 function startCall(userToCall) {
     if (!localStream) {
-        alert("Media devices not ready. Please allow camera and microphone access.");
+        alert("Microphone not ready. Please allow microphone access.");
         return;
     }
     if (Object.keys(peers).length > 0) {
@@ -356,9 +358,20 @@ socket.on('call ended', () => {
 });
 
 function handleRemoteStream(stream, user) {
-    remoteVideo.srcObject = stream;
-    remoteVideo.classList.remove('hidden');
-    localVideo.classList.add('small'); // Make local video smaller
+    if (stream.getVideoTracks().length > 0) {
+        remoteVideo.srcObject = stream;
+        remoteVideo.classList.remove('hidden');
+        videoContainer.classList.add('active');
+    }
+
+    let audio = document.querySelector(`audio[data-user="${user}"]`);
+    if (!audio) {
+        audio = document.createElement('audio');
+        audio.setAttribute('data-user', user);
+        audio.autoplay = true;
+        voiceChatContainer.appendChild(audio);
+    }
+    audio.srcObject = stream;
 
     voiceChatStatus.classList.remove('hidden');
     callInfo.textContent = `With ${user}`;
@@ -367,8 +380,14 @@ function handleRemoteStream(stream, user) {
 function handlePeerClose(user) {
     remoteVideo.srcObject = null;
     remoteVideo.classList.add('hidden');
-    localVideo.classList.remove('small'); // Restore local video size
+    localVideo.srcObject = null;
+    localVideo.classList.add('hidden');
+    videoContainer.classList.remove('active');
 
+    const audio = document.querySelector(`audio[data-user="${user}"]`);
+    if (audio) {
+        audio.remove();
+    }
     if (peers[user]) {
        delete peers[user];
     }
@@ -376,6 +395,8 @@ function handlePeerClose(user) {
     voiceChatStatus.classList.add('hidden');
     callInfo.textContent = '';
     muteButton.textContent = 'Mute';
+    toggleVideoButton.textContent = 'Start Video';
+    isVideoEnabled = false;
 }
 
 muteButton.addEventListener('click', () => {
@@ -384,6 +405,40 @@ muteButton.addEventListener('click', () => {
         track.enabled = !track.enabled;
     });
     muteButton.textContent = muteButton.textContent === 'Mute' ? 'Unmute' : 'Mute';
+});
+
+toggleVideoButton.addEventListener('click', async () => {
+    const peer = Object.values(peers)[0];
+    if (!peer) return;
+
+    if (isVideoEnabled) {
+        const videoTrack = localStream.getVideoTracks()[0];
+        if (videoTrack) {
+            videoTrack.stop();
+            peer.removeTrack(videoTrack, localStream);
+            localStream.removeTrack(videoTrack);
+        }
+        localVideo.srcObject = null;
+        localVideo.classList.add('hidden');
+        toggleVideoButton.textContent = 'Start Video';
+        isVideoEnabled = false;
+    } else {
+        try {
+            const videoStream = await navigator.mediaDevices.getUserMedia({ video: true });
+            const videoTrack = videoStream.getVideoTracks()[0];
+            localStream.addTrack(videoTrack);
+            peer.addTrack(videoTrack, localStream);
+
+            localVideo.srcObject = new MediaStream([videoTrack]);
+            localVideo.classList.remove('hidden');
+            videoContainer.classList.add('active');
+            toggleVideoButton.textContent = 'Stop Video';
+            isVideoEnabled = true;
+        } catch (err) {
+            console.error("Error accessing camera:", err);
+            alert("Could not access camera.");
+        }
+    }
 });
 
 hangUpButton.addEventListener('click', () => {

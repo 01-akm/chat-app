@@ -121,6 +121,7 @@ body {
     flex-grow: 1;
     padding: 12px;
     overflow-y: auto;
+    background-color: #fff; 
 }
 
 #messages {
@@ -171,12 +172,12 @@ body {
 
 /* --- Private Message Styles --- */
 #messages li.private-message {
-    background-color: #f0f8ff; /* Light alice blue */
-    border-left: 3px solid #6495ed; /* Cornflower blue */
+    background-color: #f0f8ff;
+    border-left: 3px solid #6495ed;
 }
 #messages li.my-message.private-message {
-    background-color: #b0e0e6; /* Powder blue */
-    border-right: 3px solid #4682b4; /* Steel blue */
+    background-color: #b0e0e6;
+    border-right: 3px solid #4682b4;
     border-left: none;
 }
 
@@ -210,6 +211,7 @@ body {
     display: flex;
     padding: 12px;
     border-top: 1px solid #dddfe2;
+    background: #fff;
 }
 
 #input {
@@ -239,6 +241,7 @@ body {
     font-size: 12px;
     color: #65676b;
     height: 16px;
+    background: #fff;
 }
 
 #private-message-indicator {
@@ -265,25 +268,31 @@ body {
 #video-container {
     position: relative;
     background-color: #000;
-    flex-grow: 1;
-    display: flex;
-    justify-content: center;
-    align-items: center;
+    /* Video container is present but has no height by default */
+    height: 0;
+    flex-shrink: 0; /* Prevent it from shrinking */
+    transition: height 0.3s ease;
+}
+
+#video-container.active {
+    /* When active, it takes up space */
+    height: 300px;
 }
 
 #local-video, #remote-video {
-    width: 100%;
+    max-width: 100%;
+    max-height: 100%;
     height: 100%;
+    width: 100%;
     object-fit: contain;
-    transition: all 0.3s ease;
 }
 
-#local-video.small {
+#local-video {
     position: absolute;
     bottom: 16px;
     right: 16px;
     width: 25%;
-    max-width: 200px;
+    max-width: 150px;
     border: 2px solid white;
     border-radius: 8px;
     z-index: 10;
@@ -302,6 +311,11 @@ body {
     border: none;
     border-radius: 6px;
     cursor: pointer;
+}
+
+#toggle-video-button {
+    background-color: #0084ff;
+    color: white;
 }
 
 #hang-up-button {
