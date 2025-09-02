@@ -7,69 +7,72 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <!-- Username Entry -->
+    <!-- Username Input Section -->
     <div id="username-container">
-        <h2>Enter Your Username</h2>
         <form id="username-form">
-            <input id="username-input" autocomplete="off" required />
+            <input id="username-input" autocomplete="off" placeholder="Enter your username" />
             <button>Join Chat</button>
         </form>
     </div>
 
-    <!-- Main Chat Application (hidden by default) -->
+    <!-- Main Application Container -->
     <div id="app-container" class="hidden">
-        <!-- Sidebar for users and voice/video chat -->
+        <!-- Sidebar for Users and Voice Chat -->
         <div id="sidebar">
             <h2>Online Users</h2>
             <ul id="user-list"></ul>
             
-            <!-- Video Chat Container -->
-            <div id="video-container" class="hidden">
-                <video id="remote-video" autoplay></video>
-                <video id="local-video" autoplay muted></video>
-            </div>
-
-            <div id="voice-chat-container"></div> <!-- For audio elements -->
+            <!-- Voice/Video Chat Status and Controls -->
             <div id="voice-chat-status" class="hidden">
-                <div id="call-info"></div>
-                <div id="voice-controls">
-                    <button id="mute-button">Mute</button>
-                    <button id="hang-up-button">Hang Up</button>
-                </div>
+                <p id="call-info"></p>
+                <button id="mute-button">Mute</button>
+                <button id="hang-up-button">Hang Up</button>
             </div>
         </div>
 
-        <!-- Main chat area -->
+        <!-- Main Chat Area -->
         <div id="chat-area">
-            <div id="private-message-indicator" class="hidden">
-                <span id="private-message-info"></span>
-                <button id="clear-private-chat">Clear</button>
+            <!-- Video Container for Video Calls -->
+            <div id="video-container">
+                 <video id="local-video" autoplay muted></video>
+                 <video id="remote-video" class="hidden" autoplay></video>
             </div>
+
+            <!-- Chat Messages -->
             <div id="chat-container">
                 <ul id="messages"></ul>
             </div>
+
+            <!-- Typing Indicator -->
             <div id="typing-indicator"></div>
-            <div id="form-container">
-                <form id="form">
-                    <button type="button" id="file-button">📎</button>
-                    <input type="file" id="file-input" accept="image/*" />
-                    <input id="input" autocomplete="off" placeholder="Type a message..." />
-                    <button type="submit">Send</button>
-                </form>
+
+            <!-- Private Message Indicator -->
+            <div id="private-message-indicator" class="hidden">
+                <span>Private message to: <strong id="private-message-user"></strong></span>
+                <span id="clear-private-message"> (Clear)</span>
             </div>
+
+            <!-- Message Input Form -->
+            <form id="form">
+                <input type="file" id="file-input" class="hidden" accept="image/*" />
+                <button type="button" id="file-button">📎</button>
+                <input id="input" autocomplete="off" placeholder="Type a message..." />
+                <button type="submit">Send</button>
+            </form>
         </div>
     </div>
     
-    <!-- Incoming Call Notification (hidden by default) -->
+    <!-- Incoming Call Notification -->
     <div id="incoming-call-container" class="hidden">
-        <div id="incoming-call-info"></div>
-        <div id="incoming-call-buttons">
-            <button id="accept-call-button">Accept</button>
-            <button id="decline-call-button">Decline</button>
-        </div>
+        <p id="incoming-call-info"></p>
+        <button id="accept-call-button">Accept</button>
+        <button id="decline-call-button">Decline</button>
     </div>
 
-
+    <!-- Hidden audio container for voice chat -->
+    <div id="voice-chat-container"></div>
+    
+    <!-- Scripts -->
     <script src="/socket.io/socket.io.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/simple-peer@9.11.1/simplepeer.min.js"></script>
     <script src="client.js"></script>
