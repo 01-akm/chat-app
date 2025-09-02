@@ -1,60 +1,67 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Chat App</title>
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat App</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
+    <!-- Username Entry -->
     <div id="username-container">
+        <h2>Enter Your Username</h2>
         <form id="username-form">
-            <input id="username-input" autocomplete="off" placeholder="Enter your username" />
+            <input id="username-input" autocomplete="off" required />
             <button>Join Chat</button>
         </form>
     </div>
 
+    <!-- Main Chat Application (hidden by default) -->
     <div id="app-container" class="hidden">
-        <div id="incoming-call-container" class="hidden">
-            <span id="incoming-call-info"></span>
-            <button id="accept-call-button">Accept</button>
-            <button id="decline-call-button">Decline</button>
-        </div>
-
+        <!-- Sidebar for users and voice chat -->
         <div id="sidebar">
             <h2>Online Users</h2>
             <ul id="user-list"></ul>
+            <div id="voice-chat-container"></div>
             <div id="voice-chat-status" class="hidden">
-                <h3>Voice Chat</h3>
                 <div id="call-info"></div>
-                <div id="voice-chat-controls">
+                <div id="voice-controls">
                     <button id="mute-button">Mute</button>
                     <button id="hang-up-button">Hang Up</button>
                 </div>
             </div>
         </div>
 
-        <div id="chat-window">
+        <!-- Main chat area -->
+        <div id="chat-area">
+            <div id="private-message-indicator" class="hidden">
+                <span id="private-message-info"></span>
+                <button id="clear-private-chat">Clear</button>
+            </div>
             <div id="chat-container">
                 <ul id="messages"></ul>
             </div>
             <div id="typing-indicator"></div>
-            <!-- New Private Message Indicator -->
-            <div id="private-message-indicator" class="hidden">
-                <span id="private-message-info"></span>
-                <button id="clear-private-chat">✖</button>
+            <div id="form-container">
+                <form id="form">
+                    <button type="button" id="file-button">📎</button>
+                    <input type="file" id="file-input" accept="image/*" />
+                    <input id="input" autocomplete="off" placeholder="Type a message..." />
+                    <button type="submit">Send</button>
+                </form>
             </div>
-            <form id="form">
-                <input type="file" id="file-input" style="display: none;">
-                <button type="button" id="file-button" class="file-upload-button">📎</button>
-                <input id="input" autocomplete="off" placeholder="Type a message..." />
-                <button>Send</button>
-            </form>
-        </div>
-
-        <div id="voice-chat-container">
-            <!-- Audio elements will be added here -->
         </div>
     </div>
+    
+    <!-- Incoming Call Notification (hidden by default) -->
+    <div id="incoming-call-container" class="hidden">
+        <div id="incoming-call-info"></div>
+        <div id="incoming-call-buttons">
+            <button id="accept-call-button">Accept</button>
+            <button id="decline-call-button">Decline</button>
+        </div>
+    </div>
+
 
     <script src="/socket.io/socket.io.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/simple-peer@9.11.1/simplepeer.min.js"></script>
