@@ -14,7 +14,6 @@
     </div>
 
     <div id="app-container" class="hidden">
-        <!-- New Incoming Call Notification -->
         <div id="incoming-call-container" class="hidden">
             <span id="incoming-call-info"></span>
             <button id="accept-call-button">Accept</button>
@@ -39,6 +38,11 @@
                 <ul id="messages"></ul>
             </div>
             <div id="typing-indicator"></div>
+            <!-- New Private Message Indicator -->
+            <div id="private-message-indicator" class="hidden">
+                <span id="private-message-info"></span>
+                <button id="clear-private-chat">✖</button>
+            </div>
             <form id="form">
                 <input type="file" id="file-input" style="display: none;">
                 <button type="button" id="file-button" class="file-upload-button">📎</button>
